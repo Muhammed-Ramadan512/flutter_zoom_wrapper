@@ -152,7 +152,7 @@ class FlutterZoomWrapperPlugin :
             this.displayName = displayName
         }
 
-        val options = JoinMeetingOptions() // Zoom SDK 6.5 → بدون UI flags
+        val options = JoinMeetingOptions() // Zoom SDK 6.5 → no UI flags available
 
         val act = currentActivity ?: context
 
@@ -160,9 +160,21 @@ class FlutterZoomWrapperPlugin :
 
         zoomSDK.meetingService.joinMeetingWithParams(act, joinParams, options)
 
-        // 🔥 بعد الدخول للمكالمة — اخفي الـ Toolbar بالكامل
-        // هذا هو الحل الوحيد لإخفاء Meeting Info في SDK 6.5
-        zoomSDK.inMeetingService.inMeetingUIController?.hideMeetingToolbar(true)
+
+        // ---------------------------------------------------------------
+        //   🔥 إخفاء العناصر غير المرغوبة في Zoom SDK 6.5 (بدون منع Chat)
+        // ---------------------------------------------------------------
+        val uiController = zoomSDK.inMeetingService.inMeetingUIController
+
+        uiController?.hideMeetingInfoButton(true)   // إخفاء Meeting Info على الأجهزة الكبيرة
+        uiController?.hideMoreButton(true)          // إخفاء More على الموبايل
+        uiController?.hideInviteButton(true)        // إخفاء Invite
+        uiController?.hideShareButton(true)         // إخفاء Share Screen
+        uiController?.hideRecordButton(true)        // إخفاء Recording
+
+
+        // ✔ Chat / Participants / Reactions تظل تعمل طبيعي
+        // ---------------------------------------------------------------
 
         result.success(true)
     }
