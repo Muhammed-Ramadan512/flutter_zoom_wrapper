@@ -134,33 +134,45 @@ class FlutterZoomWrapperPlugin :
     // ---------------------------------------------------------------
     //                            Join Meeting
     // ---------------------------------------------------------------
-    private fun joinMeeting(meetingId: String?, password: String?, displayName: String?, result: Result) {
+   private fun joinMeeting(meetingId: String?, password: String?, displayName: String?, result: Result) {
 
-        if (!zoomSDK.isInitialized) {
-            result.error("SDK_NOT_INITIALIZED", "Zoom SDK not initialized", null)
-            return
-        }
-
-        if (meetingId.isNullOrEmpty() || password.isNullOrEmpty() || displayName.isNullOrEmpty()) {
-            result.error("INVALID_ARGUMENTS", "Missing meeting details", null)
-            return
-        }
-
-        val joinParams = JoinMeetingParams().apply {
-            meetingNo = meetingId
-            this.password = password
-            this.displayName = displayName
-        }
-
-        val options = JoinMeetingOptions()
-
-        val act = currentActivity ?: context
-
-        applyScreenSecurity(currentActivity)
-        zoomSDK.meetingService.joinMeetingWithParams(act, joinParams, options)
-
-        result.success(true)
+    if (!zoomSDK.isInitialized) {
+        result.error("SDK_NOT_INITIALIZED", "Zoom SDK not initialized", null)
+        return
     }
+
+    if (meetingId.isNullOrEmpty() || password.isNullOrEmpty() || displayName.isNullOrEmpty()) {
+        result.error("INVALID_ARGUMENTS", "Missing meeting details", null)
+        return
+    }
+
+    val joinParams = JoinMeetingParams().apply {
+        meetingNo = meetingId
+        this.password = password
+        this.displayName = displayName
+    }
+
+    // 🔥 إعدادات إخفاء عناصر الواجهة داخل Zoom Meeting
+    val options = JoinMeetingOptions().apply {
+        no_invite = true                // إخفاء زر Invite
+        no_meeting_id = true            // إخفاء Meeting ID
+        no_meeting_password = true      // إخفاء Password
+        no_meeting_url = true           // إخفاء رابط الاجتماع
+        no_chat_msg = true              // إخفاء Chat
+        no_participants = true          // إخفاء Participants
+        no_share = true                 // إخفاء Share Screen
+        no_record = true                // إخفاء Recording
+    }
+
+    val act = currentActivity ?: context
+
+    applyScreenSecurity(currentActivity)
+
+    zoomSDK.meetingService.joinMeetingWithParams(act, joinParams, options)
+
+    result.success(true)
+}
+
 
 
     // ---------------------------------------------------------------
