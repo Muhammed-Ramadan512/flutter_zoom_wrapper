@@ -47,7 +47,6 @@ class FlutterZoomWrapperPlugin :
             "getPlatformVersion" ->
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
 
-
             // -------------------- initZoom ------------------------
             "initZoom" -> {
                 val jwt = call.argument<String>("jwt")
@@ -61,7 +60,6 @@ class FlutterZoomWrapperPlugin :
                     initZoom(jwt, result)
                 }
             }
-
 
             // -------------------- joinMeeting ---------------------
             "joinMeeting" -> {
@@ -134,7 +132,12 @@ class FlutterZoomWrapperPlugin :
     // ---------------------------------------------------------------
     //                            Join Meeting
     // ---------------------------------------------------------------
-    private fun joinMeeting(meetingId: String?, password: String?, displayName: String?, result: Result) {
+    private fun joinMeeting(
+        meetingId: String?,
+        password: String?,
+        displayName: String?,
+        result: Result
+    ) {
 
         if (!zoomSDK.isInitialized) {
             result.error("SDK_NOT_INITIALIZED", "Zoom SDK not initialized", null)
@@ -152,33 +155,39 @@ class FlutterZoomWrapperPlugin :
             this.displayName = displayName
         }
 
-        val options = JoinMeetingOptions() // Zoom SDK 6.5 → no UI flags available
+        // 🔥 إعدادات الـ UI من خلال MeetingOptions + MeetingViewsOptions
+        val options = JoinMeetingOptions().apply {
+            // من MeetingOptions (الـ parent):
+            no_invite = true            // إلغاء invite من الـ UI
+            no_record = true            // إخفاء recording من الـ UI
+            no_share = true             // إخفاء share
+            no_dial_in_via_phone = true
+            no_dial_out_to_phone = true
+            no_chat_msg_toast = true    // يمنع توستات الشات
 
-        val act = currentActivity ?: context
+            // 🔥 من MeetingViewsOptions → Bitmask للتحكم في اللى يظهر على الـ View:
+            meeting_views_options =
+                MeetingViewsOptions.NO_TEXT_MEETING_ID or    // إخفاء نص Meeting ID
+                MeetingViewsOptions.NO_TEXT_PASSWORD or      // إخفاء Passcode / Password
+                MeetingViewsOptions.NO_BUTTON_MORE or        // إخفاء زر More (وبالتالي Meeting Info)
+                MeetingViewsOptions.NO_BUTTON_PARTICIPANTS or
+                MeetingViewsOptions.NO_BUTTON_SHARE
+            // تقدر تزود:
+            //  MeetingViewsOptions.NO_BUTTON_VIDEO
+            //  MeetingViewsOptions.NO_BUTTON_AUDIO
+            //  MeetingViewsOptions.NO_BUTTON_LEAVE
+            //  MeetingViewsOptions.NO_BUTTON_SWITCH_CAMERA
+            //  MeetingViewsOptions.NO_BUTTON_SWITCH_AUDIO_SOURCE
+        }
+
+        val act: Any = currentActivity ?: context
 
         applyScreenSecurity(currentActivity)
 
         zoomSDK.meetingService.joinMeetingWithParams(act, joinParams, options)
 
-
-        // ---------------------------------------------------------------
-        //   🔥 إخفاء العناصر غير المرغوبة في Zoom SDK 6.5 (بدون منع Chat)
-        // ---------------------------------------------------------------
-        val uiController = zoomSDK.inMeetingService.inMeetingUIController
-
-        uiController?.hideMeetingInfoButton(true)   // إخفاء Meeting Info على الأجهزة الكبيرة
-        uiController?.hideMoreButton(true)          // إخفاء More على الموبايل
-        uiController?.hideInviteButton(true)        // إخفاء Invite
-        uiController?.hideShareButton(true)         // إخفاء Share Screen
-        uiController?.hideRecordButton(true)        // إخفاء Recording
-
-
-        // ✔ Chat / Participants / Reactions تظل تعمل طبيعي
-        // ---------------------------------------------------------------
-
         result.success(true)
     }
-
 
 
     // ---------------------------------------------------------------
