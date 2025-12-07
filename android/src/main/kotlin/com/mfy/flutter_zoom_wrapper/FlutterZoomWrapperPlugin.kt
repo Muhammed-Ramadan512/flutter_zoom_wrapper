@@ -133,61 +133,56 @@ class FlutterZoomWrapperPlugin :
     //                            Join Meeting
     // ---------------------------------------------------------------
     private fun joinMeeting(
-        meetingId: String?,
-        password: String?,
-        displayName: String?,
-        result: Result
-    ) {
+    meetingId: String?,
+    password: String?,
+    displayName: String?,
+    result: Result
+) {
 
-        if (!zoomSDK.isInitialized) {
-            result.error("SDK_NOT_INITIALIZED", "Zoom SDK not initialized", null)
-            return
-        }
-
-        if (meetingId.isNullOrEmpty() || password.isNullOrEmpty() || displayName.isNullOrEmpty()) {
-            result.error("INVALID_ARGUMENTS", "Missing meeting details", null)
-            return
-        }
-
-        val joinParams = JoinMeetingParams().apply {
-            meetingNo = meetingId
-            this.password = password
-            this.displayName = displayName
-        }
-
-        // 🔥 إعدادات الـ UI من خلال MeetingOptions + MeetingViewsOptions
-        val options = JoinMeetingOptions().apply {
-            // من MeetingOptions (الـ parent):
-            no_invite = true            // إلغاء invite من الـ UI
-            no_record = true            // إخفاء recording من الـ UI
-            no_share = true             // إخفاء share
-            no_dial_in_via_phone = true
-            no_dial_out_to_phone = true
-            no_chat_msg_toast = true    // يمنع توستات الشات
-
-            // 🔥 من MeetingViewsOptions → Bitmask للتحكم في اللى يظهر على الـ View:
-            meeting_views_options =
-                MeetingViewsOptions.NO_TEXT_MEETING_ID or    // إخفاء نص Meeting ID
-                MeetingViewsOptions.NO_TEXT_PASSWORD or      // إخفاء Passcode / Password
-                MeetingViewsOptions.NO_BUTTON_MORE or        // إخفاء زر More (وبالتالي Meeting Info)
-                MeetingViewsOptions.NO_BUTTON_PARTICIPANTS or
-                MeetingViewsOptions.NO_BUTTON_SHARE
-            // تقدر تزود:
-            //  MeetingViewsOptions.NO_BUTTON_VIDEO
-            //  MeetingViewsOptions.NO_BUTTON_AUDIO
-            //  MeetingViewsOptions.NO_BUTTON_LEAVE
-            //  MeetingViewsOptions.NO_BUTTON_SWITCH_CAMERA
-            //  MeetingViewsOptions.NO_BUTTON_SWITCH_AUDIO_SOURCE
-        }
-
-        val act: Any = currentActivity ?: context
-
-        applyScreenSecurity(currentActivity)
-
-        zoomSDK.meetingService.joinMeetingWithParams(act, joinParams, options)
-
-        result.success(true)
+    if (!zoomSDK.isInitialized) {
+        result.error("SDK_NOT_INITIALIZED", "Zoom SDK not initialized", null)
+        return
     }
+
+    if (meetingId.isNullOrEmpty() || password.isNullOrEmpty() || displayName.isNullOrEmpty()) {
+        result.error("INVALID_ARGUMENTS", "Missing meeting details", null)
+        return
+    }
+
+    val joinParams = JoinMeetingParams().apply {
+        meetingNo = meetingId
+        this.password = password
+        this.displayName = displayName
+    }
+
+    val options = JoinMeetingOptions().apply {
+        no_invite = true
+        no_record = true
+        no_share = true
+        no_dial_in_via_phone = true
+        no_dial_out_to_phone = true
+        no_chat_msg_toast = true
+
+        meeting_views_options =
+            MeetingViewsOptions.NO_TEXT_MEETING_ID or
+            MeetingViewsOptions.NO_TEXT_PASSWORD or
+            MeetingViewsOptions.NO_BUTTON_MORE or
+            MeetingViewsOptions.NO_BUTTON_PARTICIPANTS or
+            MeetingViewsOptions.NO_BUTTON_SHARE
+    }
+
+    val act = currentActivity
+
+    applyScreenSecurity(act)
+
+    if (act != null) {
+        zoomSDK.meetingService.joinMeetingWithParams(act, joinParams, options)
+    } else {
+        zoomSDK.meetingService.joinMeetingWithParams(context, joinParams, options)
+    }
+
+    result.success(true)
+}
 
 
     // ---------------------------------------------------------------
