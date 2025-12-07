@@ -18,8 +18,16 @@ class FlutterZoomWrapper {
   /// This must be called before attempting to join a meeting.
   ///
   /// [jwtToken] should be generated securely using your Zoom SDK credentials.
-  static Future<void> initializeZoom(String jwtToken) async {
-    await _channel.invokeMethod('initZoom', {'jwt': jwtToken});
+  ///
+  /// [enableProtection] controls screenshot/screen recording blocking.
+  static Future<void> initializeZoom(
+    String jwtToken, {
+    bool enableProtection = true, // 🔥 new parameter
+  }) async {
+    await _channel.invokeMethod('initZoom', {
+      'jwt': jwtToken,
+      'enableProtection': enableProtection,
+    });
   }
 
   /// Joins a Zoom meeting using the provided details.
@@ -49,11 +57,13 @@ class FlutterZoomWrapper {
     final jwt = JWT({
       'appKey': apiKey,
       'iat': DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      'exp':
-          DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/
+      'exp': DateTime.now()
+              .add(const Duration(hours: 1))
+              .millisecondsSinceEpoch ~/
           1000,
-      'tokenExp':
-          DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/
+      'tokenExp': DateTime.now()
+              .add(const Duration(hours: 1))
+              .millisecondsSinceEpoch ~/
           1000,
     });
 
