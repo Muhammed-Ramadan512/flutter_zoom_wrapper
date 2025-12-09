@@ -40,7 +40,6 @@ macos/Flutter/Flutter.podspec
 .android/
 .gradle/
 *.apk
-*.aar
 
 # Pubspec.lock — should be ignored in packages, but included in apps
 /pubspec.lock
