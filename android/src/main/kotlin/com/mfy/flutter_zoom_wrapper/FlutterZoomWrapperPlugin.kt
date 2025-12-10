@@ -189,15 +189,19 @@ class FlutterZoomWrapperPlugin :
             this.password = password
             this.displayName = displayName
         }
+        
+
+
 
         val options = JoinMeetingOptions().apply {
             // دول انت شايفهم في الـ IDE وبيشتغلوا مع 6.3.1
             no_invite = true
-            no_meeting_id = true
-            no_meeting_password = true
-            no_meeting_url = true
-            no_chat_msg = false    // خليه false علشان الشات يشتغل
-            no_participants = false
+            no_titlebar = true
+            // no_meeting_id = true
+            // no_meeting_password = true
+            // no_meeting_url = true
+            // no_chat_msg = false    // خليه false علشان الشات يشتغل
+            // no_participants = false
             no_share = false
             no_record = true
         }
